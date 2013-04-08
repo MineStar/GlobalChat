@@ -9,7 +9,12 @@ import de.minestar.protocol.newpackets.packets.ChatPacket;
 
 public class PacketHandler {
 
+    public static final PacketHandler INSTANCE;
     private static final String BROADCAST = "ALL";
+
+    static {
+        INSTANCE = new PacketHandler();
+    }
 
     private static final int MAX_PACKET_SIZE = 32766;
 

@@ -14,14 +14,18 @@ import net.md_5.bungee.api.event.ServerKickEvent;
 import net.md_5.bungee.api.plugin.Listener;
 
 import com.google.common.eventbus.Subscribe;
+import com.sun.xml.internal.ws.api.message.Packet;
 
 import de.minestar.bungee.globalchat.core.ChatColor;
+import de.minestar.bungee.globalchat.core.Core;
 import de.minestar.bungee.globalchat.core.MineServer;
 import de.minestar.bungee.globalchat.core.MineServerContainer;
 import de.minestar.bungee.globalchat.core.PlayerManager;
-import de.minestar.protocol.packets.MultiPacket;
-import de.minestar.protocol.packets.Packet;
-import de.minestar.protocol.packets.PacketType;
+import de.minestar.protocol.newpackets.MultiPacket;
+import de.minestar.protocol.newpackets.NetworkPacket;
+import de.minestar.protocol.newpackets.PacketHandler;
+import de.minestar.protocol.newpackets.PacketType;
+import de.minestar.protocol.newpackets.packets.InventoryRequestPackage;
 
 public class ActionListener implements Listener {
 
@@ -82,29 +86,16 @@ public class ActionListener implements Listener {
     }
 
     private void sendTestPackages(ProxiedPlayer sender, MineServer server, String message) {
-        try {
-            String channelName = "globalchat";
-
-            // message
-            MultiPacket multiPacket = new MultiPacket("Forward", "ALL", PacketType.MULTIPACKET);
-            multiPacket.addPacket(Packet.createPackage(PacketType.CHAT, "PAKET 1"));
-            multiPacket.addPacket(Packet.createPackage(PacketType.CHAT, message));
-            multiPacket.addPacket(Packet.createPackage(PacketType.CHAT, "PAKET 3"));
-            multiPacket.addPacket(Packet.createPackage(PacketType.COMMAND, "i stone"));
-            sender.getServer().sendData(channelName, multiPacket.getByteOutputStream().toByteArray());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
-//    private void sendPackage(ProxiedPlayer sender, MineServer server, MultiPacket packet) {
-//        try {
-//            String channelName = "globalchat";
-//            sender.getServer().sendData(channelName, packet.getByteOutputStream().toByteArray());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    // private void sendPackage(ProxiedPlayer sender, MineServer server, MultiPacket packet) {
+    // try {
+    // String channelName = "globalchat";
+    // sender.getServer().sendData(channelName, packet.getByteOutputStream().toByteArray());
+    // } catch (Exception e) {
+    // e.printStackTrace();
+    // }
+    // }
 
     @Subscribe
     public void onServerConnected(ServerConnectedEvent event) {
@@ -147,18 +138,18 @@ public class ActionListener implements Listener {
 
     @Subscribe
     public void onPluginMessage(PluginMessageEvent event) {
-        System.out.println("PluginMessageEvent");
-        System.out.println("length: " + event.getData().length);
-        MultiPacket multiPacket = MultiPacket.readPackage(event.getData());
-        if (multiPacket != null) {
-            System.out.println("Type: " + multiPacket.getPacketType());
-            switch (multiPacket.getPacketType()) {
-                case INVENTORY_SAVE : {
-                    this.handleInventorySave(multiPacket);
-                    break;
-                }
+        // correct channel
+        if (!event.getTag().equalsIgnoreCase(Core.INSTANCE.NAME)) {
+            return;
+        }
+
+        // get packet
+        NetworkPacket packet = PacketHandler.INSTANCE.extractPacket(event.getData());
+        if (packet != null) {
+            System.out.println("Type: " + packet.getType());
+            switch (packet.getType()) {
                 case INVENTORY_REQUEST : {
-                    this.handleInventoryRequest(multiPacket);
+                    this.handleInventoryRequest((InventoryRequestPackage) packet);
                     break;
                 }
                 default : {
@@ -166,40 +157,10 @@ public class ActionListener implements Listener {
                 }
             }
         } else {
-            System.out.println("MultiPackage IS NULL");
+            System.out.println("TYPE IS UNKNOWN");
         }
     }
 
-    private void handleInventorySave(MultiPacket multiPacket) {
-        try {
-            System.out.println("saving inventory...");
-
-            // handle playerpacket
-            Packet playerPacket = multiPacket.getPacketList().get(0);
-            String playerName = new String(playerPacket.getData(), "UTF-8");
-
-            // handle inventorypacket
-            Packet invPacket = multiPacket.getPacketList().get(1);
-            this.playerManager.addInventory(playerName, invPacket.getData());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void handleInventoryRequest(MultiPacket multiPacket) {
-        try {
-            // handle playerpacket
-            Packet playerPacket = multiPacket.getPacketList().get(0);
-            String playerName = new String(playerPacket.getData(), "UTF-8");
-
-            System.out.println("inventory request => sending inventory");
-            if (this.playerManager.hasInventory(playerName)) {
-                MultiPacket sendPacket = new MultiPacket("Forward", "ALL", PacketType.INVENTORY_LOAD);
-                sendPacket.addPacket(Packet.createPackage(PacketType.PLAYERNAME, playerName));
-                sendPacket.addPacket(Packet.createPackage(PacketType.INVENTORY_LOAD, this.playerManager.getInventory(playerName)));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void handleInventoryRequest(InventoryRequestPackage packet) {
     }
 }
