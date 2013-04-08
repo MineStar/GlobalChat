@@ -90,7 +90,7 @@ public class PacketHandler {
     public NetworkPacket extractPacket(byte[] data) {
         BUFFER.clear();
         BUFFER.put(data);
-        BUFFER.reset();
+        BUFFER.clear();
 
         PacketType type = PacketType.get(BUFFER.getInt());
         switch (type) {
