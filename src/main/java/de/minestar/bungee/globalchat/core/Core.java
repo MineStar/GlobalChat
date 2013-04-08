@@ -21,6 +21,7 @@ public class Core extends Plugin {
     @Override
     public void onEnable() {
         Core.INSTANCE = this;
+        ProxyServer.getInstance().registerChannel("globalchat");
         ProxyServer.getInstance().getPluginManager().registerListener(this, new ActionListener(new PlayerManager()));
         Core.log("Enabled!");
     }
