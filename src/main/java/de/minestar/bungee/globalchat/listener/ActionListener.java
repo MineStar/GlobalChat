@@ -97,14 +97,14 @@ public class ActionListener implements Listener {
         }
     }
 
-    private void sendPackage(ProxiedPlayer sender, MineServer server, MultiPacket packet) {
-        try {
-            String channelName = "globalchat";
-            sender.getServer().sendData(channelName, packet.getByteOutputStream().toByteArray());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    private void sendPackage(ProxiedPlayer sender, MineServer server, MultiPacket packet) {
+//        try {
+//            String channelName = "globalchat";
+//            sender.getServer().sendData(channelName, packet.getByteOutputStream().toByteArray());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Subscribe
     public void onServerConnected(ServerConnectedEvent event) {
