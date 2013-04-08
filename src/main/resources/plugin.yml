@@ -1,0 +1,4 @@
+name: GlobalChat
+main: de.minestar.bungee.globalchat.core.Core
+version: 1
+author: GeMoschen
