@@ -2,11 +2,29 @@ package de.minestar.protocol.newpackets;
 
 import java.nio.ByteBuffer;
 
-public interface NetworkPacket {
+public abstract class NetworkPacket {
 
-    public PacketType getPacketType();
+    private final PacketType type;
 
-    public void pack(ByteBuffer buffer);
+    public NetworkPacket(PacketType type) {
+        this.type = type;
+    }
 
-    public NetworkPacket extract(ByteBuffer buffer);
+    public NetworkPacket(PacketType type, ByteBuffer buffer) {
+        this(type);
+        onReceive(buffer);
+    }
+
+    public final PacketType getType() {
+        return type;
+    }
+
+    public final void pack(ByteBuffer buffer) {
+        onSend(buffer);
+    }
+
+    public abstract void onSend(ByteBuffer buffer);
+
+    public abstract NetworkPacket onReceive(ByteBuffer buffer);
+
 }

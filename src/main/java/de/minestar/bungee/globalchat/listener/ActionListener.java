@@ -109,17 +109,21 @@ public class ActionListener implements Listener {
     @Subscribe
     public void onServerConnected(ServerConnectedEvent event) {
         System.out.println("ServerConnectedEvent");
-        // if (this.playerManager.updatePlayer(event.getPlayer()) && this.playerManager.hasInventory(event.getPlayer())) {
+        // if (this.playerManager.updatePlayer(event.getPlayer()) &&
+        // this.playerManager.hasInventory(event.getPlayer())) {
         // // TODO: update the inventory with the old one!
         // try {
         // System.out.println("Sending inventory...");
-        // // Packet packet = Packet.createPackage("Forward", event.getServer().getInfo().getName(), PacketType.INVENTORY_SEND, this.playerManager.getInventory(event.getPlayer()));
+        // // Packet packet = Packet.createPackage("Forward",
+        // event.getServer().getInfo().getName(), PacketType.INVENTORY_SEND,
+        // this.playerManager.getInventory(event.getPlayer()));
         //
         // // get the sender
         // ProxiedPlayer sender = event.getPlayer();
         //
         // // get the server
-        // MineServer server = this.container.getServer(event.getServer().getInfo().getName());
+        // MineServer server =
+        // this.container.getServer(event.getServer().getInfo().getName());
         // // this.sendPackage(sender, server, packet);
         // } catch (IOException e) {
         // e.printStackTrace();

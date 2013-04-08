@@ -1,6 +1,7 @@
 package de.minestar.protocol.newpackets;
 
-import de.minestar.protocol.newpackets.packets.ChatPacket;
+import java.util.HashMap;
+import java.util.Map;
 
 public enum PacketType {
     MULTIPACKET,
@@ -13,7 +14,7 @@ public enum PacketType {
 
     KICK,
 
-    CHAT(ChatPacket.class),
+    CHAT(),
 
     COMMAND,
 
@@ -23,17 +24,16 @@ public enum PacketType {
 
     INVENTORY_LOAD;
 
-    private Class<? extends NetworkPacket> clazz;
+    private static Map<Integer, PacketType> mapByOrdinal;
 
-    private PacketType() {
-        this(null);
+    static {
+        mapByOrdinal = new HashMap<Integer, PacketType>();
+        for (PacketType type : values()) {
+            mapByOrdinal.put(type.ordinal(), type);
+        }
     }
 
-    private PacketType(Class<? extends NetworkPacket> clazz) {
-        this.clazz = clazz;
-    }
-
-    public Class<? extends NetworkPacket> getClazz() {
-        return clazz;
+    public static PacketType get(int ordinal) {
+        return mapByOrdinal.get(ordinal);
     }
 }

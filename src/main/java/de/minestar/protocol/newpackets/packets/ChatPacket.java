@@ -5,27 +5,27 @@ import java.nio.ByteBuffer;
 import de.minestar.protocol.newpackets.NetworkPacket;
 import de.minestar.protocol.newpackets.PacketType;
 
-public class ChatPacket implements NetworkPacket {
+public class ChatPacket extends NetworkPacket {
 
-    public ChatPacket() {
-        // REFLECTIONS
+    public ChatPacket(PacketType type) {
+        super(PacketType.CHAT);
+    }
+
+    public ChatPacket(ByteBuffer buffer) {
+        super(PacketType.CHAT, buffer);
     }
 
     public PacketType getPacketType() {
         return PacketType.CHAT;
     }
 
-    public void pack(ByteBuffer buffer) {
-        // TODO Auto-generated method stub
+    @Override
+    public void onSend(ByteBuffer buffer) {
 
     }
 
-    public NetworkPacket extract(ByteBuffer buffer) {
-        return new ChatPacket(buffer);
+    @Override
+    public NetworkPacket onReceive(ByteBuffer buffer) {
+        return null;
     }
-
-    private ChatPacket(ByteBuffer buffer) {
-
-    }
-
 }

@@ -7,11 +7,12 @@ import java.util.List;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-public class MultiPacket implements NetworkPacket, Iterable<NetworkPacket> {
+public class MultiPacket extends NetworkPacket implements Iterable<NetworkPacket> {
 
     private List<NetworkPacket> subPackets;
 
     public MultiPacket() {
+        super(PacketType.MULTIPACKET);
         subPackets = new ArrayList<NetworkPacket>();
     }
 
@@ -24,19 +25,17 @@ public class MultiPacket implements NetworkPacket, Iterable<NetworkPacket> {
         subPackets.clear();
     }
 
-    public void pack(ByteBuffer buffer) {
-        throw new NotImplementedException();
-    }
-
-    public NetworkPacket extract(ByteBuffer buffer) {
-        throw new NotImplementedException();
-    }
-
     public Iterator<NetworkPacket> iterator() {
         return subPackets.iterator();
     }
 
-    public PacketType getPacketType() {
-        return PacketType.MULTIPACKET;
+    @Override
+    public void onSend(ByteBuffer buffer) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public NetworkPacket onReceive(ByteBuffer buffer) {
+        throw new NotImplementedException();
     }
 }

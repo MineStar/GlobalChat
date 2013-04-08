@@ -3,10 +3,9 @@ package de.minestar.protocol.newpackets;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import net.md_5.bungee.api.connection.Server;
+import de.minestar.protocol.newpackets.packets.ChatPacket;
 
 public class PacketHandler {
 
@@ -16,21 +15,8 @@ public class PacketHandler {
 
     private final ByteBuffer BUFFER;
 
-    private Map<Integer, NetworkPacket> packetMap = new HashMap<Integer, NetworkPacket>();
-
     public PacketHandler() {
         BUFFER = ByteBuffer.allocate(MAX_PACKET_SIZE);
-        fillPacketMap();
-    }
-
-    private void fillPacketMap() {
-        for (PacketType type : PacketType.values()) {
-            try {
-                packetMap.put(type.ordinal(), type.getClazz().newInstance());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     public void send(NetworkPacket packet, Server server, String channel) {
@@ -62,15 +48,40 @@ public class PacketHandler {
     public final static Charset UFT8 = Charset.forName("UTF-8");
 
     private void sendPacket(NetworkPacket packet, Server server, String channel, BungeeSubChannel subChannel, String targetServer) {
+
+        // Packet Head:
+        //
+        // | BUNGEE HEAD |
+        // ------------------------------------
+        // BungeeChannel (Forward, Connect etc.) - Command to Bungee what to do
+        // with the packet
+        // TargetServer (ALL or servername) - Receiver of the message
+        // ------------------------------------
+        // | BUKKIT HEAD |
+        // Channel (Own defined plugin channel) - Channel between two plugins
+        // DataLength (Length of the data without any head length)
+        // Data (Array of bytes - Must be long as defined in DataLength
+        //
+
+        // Create Head
         BUFFER.clear();
-        BUFFER.put(subChannel.getSubchannel().getBytes(UFT8));
+        // BungeeChannel
+        BUFFER.put(subChannel.getName().getBytes(UFT8));
+        // TargetServer
+        BUFFER.put(targetServer.getBytes(UFT8));
 
-        if (targetServer != null)
-            BUFFER.put(targetServer.getBytes(UFT8));
+        // Channel
+        BUFFER.put(channel.getBytes(UFT8));
 
-        BUFFER.putInt(packet.getPacketType().ordinal());
+        // Placeholder
+        int pos1 = BUFFER.position();
+        BUFFER.putInt(0);
+        int pos2 = BUFFER.position();
         packet.pack(BUFFER);
+        BUFFER.putInt(pos1, BUFFER.position() - pos2);
+
         BUFFER.rewind();
+
         // Dirty -.-
         server.sendData(channel, Arrays.copyOf(BUFFER.array(), BUFFER.limit()));
         BUFFER.clear();
@@ -80,9 +91,13 @@ public class PacketHandler {
         BUFFER.clear();
         BUFFER.put(data);
         BUFFER.reset();
-        NetworkPacket templatePacket = packetMap.get(BUFFER.getInt());
-        return templatePacket.extract(BUFFER);
 
+        PacketType type = PacketType.get(BUFFER.getInt());
+        switch (type) {
+            case CHAT :
+                return new ChatPacket(BUFFER);
+            default :
+                return null;
+        }
     }
-
 }

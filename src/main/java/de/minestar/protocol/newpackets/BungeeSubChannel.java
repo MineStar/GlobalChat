@@ -6,13 +6,13 @@ public enum BungeeSubChannel {
 
     FORWARD("Forward");
 
-    private final String subchannel;
+    private final String name;
 
-    private BungeeSubChannel(String subChannel) {
-        this.subchannel = subChannel;
+    private BungeeSubChannel(String name) {
+        this.name = name;
     }
 
-    public String getSubchannel() {
-        return subchannel;
+    public String getName() {
+        return name;
     }
 }
