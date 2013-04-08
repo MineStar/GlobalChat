@@ -25,7 +25,7 @@ public class ChatPacket extends NetworkPacket {
     }
 
     @Override
-    public NetworkPacket onReceive(ByteBuffer buffer) {
-        return null;
+    public void onReceive(ByteBuffer buffer) {
+
     }
 }

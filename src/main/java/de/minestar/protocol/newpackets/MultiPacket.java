@@ -35,7 +35,7 @@ public class MultiPacket extends NetworkPacket implements Iterable<NetworkPacket
     }
 
     @Override
-    public NetworkPacket onReceive(ByteBuffer buffer) {
+    public void onReceive(ByteBuffer buffer) {
         throw new NotImplementedException();
     }
 }

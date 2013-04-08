@@ -25,6 +25,6 @@ public abstract class NetworkPacket {
 
     public abstract void onSend(ByteBuffer buffer);
 
-    public abstract NetworkPacket onReceive(ByteBuffer buffer);
+    public abstract void onReceive(ByteBuffer buffer);
 
 }
