@@ -23,10 +23,10 @@ public class InventoryRequestPackage extends NetworkPacket {
 
     @Override
     public void onSend(ByteBuffer buffer) {
-
     }
 
     @Override
     public void onReceive(ByteBuffer buffer) {
+
     }
 }
