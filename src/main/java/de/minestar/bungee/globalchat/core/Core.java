@@ -3,6 +3,7 @@ package de.minestar.bungee.globalchat.core;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 import de.minestar.bungee.globalchat.listener.ActionListener;
+import de.minestar.protocol.newpackets.PacketHandler;
 
 public class Core extends Plugin {
 
@@ -21,7 +22,7 @@ public class Core extends Plugin {
     @Override
     public void onEnable() {
         Core.INSTANCE = this;
-        ProxyServer.getInstance().registerChannel(Core.INSTANCE.NAME);
+        ProxyServer.getInstance().registerChannel(PacketHandler.CHANNEL);
         ProxyServer.getInstance().getPluginManager().registerListener(this, new ActionListener(new PlayerManager()));
         Core.log("Enabled!");
     }

@@ -1,5 +1,6 @@
 package de.minestar.bungee.globalchat.listener;
 
+import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Map;
 
@@ -14,17 +15,13 @@ import net.md_5.bungee.api.event.ServerKickEvent;
 import net.md_5.bungee.api.plugin.Listener;
 
 import com.google.common.eventbus.Subscribe;
-import com.sun.xml.internal.ws.api.message.Packet;
 
 import de.minestar.bungee.globalchat.core.ChatColor;
-import de.minestar.bungee.globalchat.core.Core;
 import de.minestar.bungee.globalchat.core.MineServer;
 import de.minestar.bungee.globalchat.core.MineServerContainer;
 import de.minestar.bungee.globalchat.core.PlayerManager;
-import de.minestar.protocol.newpackets.MultiPacket;
 import de.minestar.protocol.newpackets.NetworkPacket;
 import de.minestar.protocol.newpackets.PacketHandler;
-import de.minestar.protocol.newpackets.PacketType;
 import de.minestar.protocol.newpackets.packets.InventoryRequestPackage;
 
 public class ActionListener implements Listener {
@@ -136,31 +133,46 @@ public class ActionListener implements Listener {
         this.playerManager.removePlayer(event.getPlayer());
     }
 
+    public static ServerInfo getServerByAdress(InetSocketAddress adress) {
+        for (ServerInfo info : ProxyServer.getInstance().getServers().values()) {
+            if (info.getAddress().equals(adress)) {
+                return info;
+            }
+        }
+        return null;
+    }
+
     @Subscribe
     public void onPluginMessage(PluginMessageEvent event) {
         // correct channel
-        if (!event.getTag().equalsIgnoreCase(Core.INSTANCE.NAME)) {
+        if (!event.getTag().equalsIgnoreCase(PacketHandler.CHANNEL)) {
             return;
         }
 
         // get packet
         NetworkPacket packet = PacketHandler.INSTANCE.extractPacket(event.getData());
         if (packet != null) {
-            System.out.println("Type: " + packet.getType());
             switch (packet.getType()) {
                 case INVENTORY_REQUEST : {
-                    this.handleInventoryRequest((InventoryRequestPackage) packet);
+                    this.handleInventoryRequest(event.getSender().getAddress(), (InventoryRequestPackage) packet);
                     break;
                 }
                 default : {
                     break;
                 }
             }
-        } else {
-            System.out.println("TYPE IS UNKNOWN");
         }
     }
 
-    private void handleInventoryRequest(InventoryRequestPackage packet) {
+    private void handleInventoryRequest(InetSocketAddress adress, InventoryRequestPackage packet) {
+        System.out.println("INVENTORY_REQUEST from player: " + packet.getPlayerName());
+
+        ServerInfo server = getServerByAdress(adress);
+
+        if (server != null) {
+            System.out.println("Sending answer...");
+            InventoryRequestPackage answerPacket = new InventoryRequestPackage("This is an answer!");
+            PacketHandler.INSTANCE.send(answerPacket, server, PacketHandler.CHANNEL);
+        }
     }
 }

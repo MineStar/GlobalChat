@@ -1,16 +1,20 @@
 package de.minestar.protocol.newpackets;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 
-import net.md_5.bungee.api.connection.Server;
-import de.minestar.protocol.newpackets.packets.ChatPacket;
+import net.md_5.bungee.api.config.ServerInfo;
+import de.minestar.protocol.newpackets.packets.InventoryRequestPackage;
 
 public class PacketHandler {
 
     public static final PacketHandler INSTANCE;
     private static final String BROADCAST = "ALL";
+    public static final String CHANNEL = "GlobalChat";
 
     static {
         INSTANCE = new PacketHandler();
@@ -24,11 +28,11 @@ public class PacketHandler {
         BUFFER = ByteBuffer.allocate(MAX_PACKET_SIZE);
     }
 
-    public void send(NetworkPacket packet, Server server, String channel) {
+    public void send(NetworkPacket packet, ServerInfo server, String channel) {
         this.send(packet, server, channel, BungeeSubChannel.FORWARD, BROADCAST);
     }
 
-    public void send(NetworkPacket packet, Server server, String channel, BungeeSubChannel subChannel, String targetServer) {
+    public void send(NetworkPacket packet, ServerInfo server, String channel, BungeeSubChannel subChannel, String targetServer) {
         if (packet instanceof MultiPacket) {
             MultiPacket multiPacket = (MultiPacket) packet;
             for (NetworkPacket innerPacket : multiPacket) {
@@ -39,7 +43,7 @@ public class PacketHandler {
         }
     }
 
-    public void send(NetworkPacket packet, Server server, String channel, BungeeSubChannel subChannel) {
+    public void send(NetworkPacket packet, ServerInfo server, String channel, BungeeSubChannel subChannel) {
         if (packet instanceof MultiPacket) {
             MultiPacket multiPacket = (MultiPacket) packet;
             for (NetworkPacket innerPacket : multiPacket) {
@@ -52,7 +56,7 @@ public class PacketHandler {
 
     public final static Charset UFT8 = Charset.forName("UTF-8");
 
-    private void sendPacket(NetworkPacket packet, Server server, String channel, BungeeSubChannel subChannel, String targetServer) {
+    private void sendPacket(NetworkPacket packet, ServerInfo server, String channel, BungeeSubChannel subChannel, String targetServer) {
 
         // Packet Head:
         //
@@ -68,41 +72,91 @@ public class PacketHandler {
         // Data (Array of bytes - Must be long as defined in DataLength
         //
 
-        // Create Head
-        BUFFER.clear();
-        // BungeeChannel
-        BUFFER.put(subChannel.getName().getBytes(UFT8));
-        // TargetServer
-        BUFFER.put(targetServer.getBytes(UFT8));
+        // // Create Head
+        // BUFFER.clear();
+        // // BungeeChannel
+        // BUFFER.put(subChannel.getName().getBytes(UFT8));
+        // // TargetServer
+        // BUFFER.put(targetServer.getBytes(UFT8));
+        //
+        // // Channel
+        // BUFFER.put(channel.getBytes(UFT8));
+        //
+        // // Placeholder
+        // int pos1 = BUFFER.position();
+        // BUFFER.putInt(0);
+        // int pos2 = BUFFER.position();
+        // packet.pack(BUFFER);
+        // BUFFER.putInt(pos1, BUFFER.position() - pos2);
+        //
+        // BUFFER.rewind();
+        //
+        // // Dirty -.-
+        // server.sendData(channel, Arrays.copyOf(BUFFER.array(), BUFFER.limit()));
+        // BUFFER.clear();
 
-        // Channel
-        BUFFER.put(channel.getBytes(UFT8));
+        try {
+            // create streams
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(bos);
 
-        // Placeholder
-        int pos1 = BUFFER.position();
-        BUFFER.putInt(0);
-        int pos2 = BUFFER.position();
-        packet.pack(BUFFER);
-        BUFFER.putInt(pos1, BUFFER.position() - pos2);
+            // BungeeChannel
+            dos.writeUTF(subChannel.getName());
 
-        BUFFER.rewind();
+            // target
+            dos.writeUTF(targetServer);
 
-        // Dirty -.-
-        server.sendData(channel, Arrays.copyOf(BUFFER.array(), BUFFER.limit()));
-        BUFFER.clear();
+            // pluginchannel
+            dos.writeUTF(channel);
+
+            // pack data
+            ByteArrayOutputStream data = packet.pack();
+            byte[] dataArray = data.toByteArray();
+
+            // datalength
+            dos.writeInt(dataArray.length);
+
+            // data
+            dos.write(dataArray);
+
+            // send data
+            server.sendData(CHANNEL, bos.toByteArray());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public NetworkPacket extractPacket(byte[] data) {
-        BUFFER.clear();
-        BUFFER.put(data);
-        BUFFER.clear();
+        try {
+            // create streams
+            ByteArrayInputStream bis = new ByteArrayInputStream(data);
+            DataInputStream dataInputStream = new DataInputStream(bis);
 
-        PacketType type = PacketType.get(BUFFER.getInt());
-        switch (type) {
-            case CHAT :
-                return new ChatPacket(BUFFER);
-            default :
-                return null;
+            // extract head
+            PacketHeadData headData = new PacketHeadData(dataInputStream);
+
+            // get data
+            int datalength = dataInputStream.readInt();
+            byte[] dataArray = new byte[datalength];
+            bis.read(dataArray);
+
+            // create new streams for reading
+            bis = new ByteArrayInputStream(dataArray);
+            dataInputStream = new DataInputStream(bis);
+
+            // get packettype
+            PacketType type = PacketType.get(dataInputStream.readInt());
+
+            switch (type) {
+                case INVENTORY_REQUEST : {
+                    return new InventoryRequestPackage(dataInputStream);
+                }
+                default : {
+                    return null;
+                }
+            }
+        } catch (Exception e) {
+            return null;
         }
     }
 }

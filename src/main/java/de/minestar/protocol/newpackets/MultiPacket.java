@@ -1,5 +1,8 @@
 package de.minestar.protocol.newpackets;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -36,6 +39,16 @@ public class MultiPacket extends NetworkPacket implements Iterable<NetworkPacket
 
     @Override
     public void onReceive(ByteBuffer buffer) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void onSend(DataOutputStream dataOutputStream) throws IOException {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void onReceive(DataInputStream dataInputStream) throws IOException {
         throw new NotImplementedException();
     }
 }
