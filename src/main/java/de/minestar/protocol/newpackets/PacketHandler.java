@@ -8,7 +8,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 import net.md_5.bungee.api.config.ServerInfo;
-import de.minestar.protocol.newpackets.packets.InventoryRequestPackage;
+import de.minestar.protocol.newpackets.packets.InventoryDataPacket;
+import de.minestar.protocol.newpackets.packets.InventoryRequestPacket;
 
 public class PacketHandler {
 
@@ -149,7 +150,10 @@ public class PacketHandler {
 
             switch (type) {
                 case INVENTORY_REQUEST : {
-                    return new InventoryRequestPackage(dataInputStream);
+                    return new InventoryRequestPacket(dataInputStream);
+                }
+                case INVENTORY_DATA : {
+                    return new InventoryDataPacket(dataInputStream);
                 }
                 default : {
                     return null;

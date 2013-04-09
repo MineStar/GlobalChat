@@ -73,9 +73,9 @@ public class PlayerManager {
      * @param player
      * @return <b>true</b> if the player was connected on another bungeeserver, otherwise <b>false</b>
      */
-    public boolean updatePlayer(ProxiedPlayer player) {
+    public boolean updatePlayer(ProxiedPlayer player, ServerInfo serverInfo) {
         boolean wasConnected = this.isConnected(player);
-        this.playerMap.put(player.getName(), player.getServer().getInfo());
+        this.playerMap.put(player.getName(), serverInfo);
         return wasConnected;
     }
 
@@ -98,6 +98,16 @@ public class PlayerManager {
      * @return <b>true</b> if the player is connected on another bungeeserver, otherwise <b>false</b>
      */
     public boolean isConnected(ProxiedPlayer player) {
-        return this.playerMap.containsKey(player.getName());
+        return this.isConnected(player.getName());
+    }
+
+    /**
+     * Check if a player is connected on another bungeeserver
+     * 
+     * @param player
+     * @return <b>true</b> if the player is connected on another bungeeserver, otherwise <b>false</b>
+     */
+    public boolean isConnected(String playerName) {
+        return this.playerMap.containsKey(playerName);
     }
 }

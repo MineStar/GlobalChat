@@ -9,24 +9,24 @@ import de.minestar.bungee.globalchat.core.BufferHelper;
 import de.minestar.protocol.newpackets.NetworkPacket;
 import de.minestar.protocol.newpackets.PacketType;
 
-public class InventoryRequestPackage extends NetworkPacket {
+public class InventoryRequestPacket extends NetworkPacket {
 
     private String playerName;
 
-    public InventoryRequestPackage(String playerName) {
+    public InventoryRequestPacket(String playerName) {
         super(PacketType.INVENTORY_REQUEST);
         this.playerName = playerName;
     }
 
-    public InventoryRequestPackage(PacketType type) {
+    public InventoryRequestPacket(PacketType type) {
         super(PacketType.INVENTORY_REQUEST);
     }
 
-    public InventoryRequestPackage(ByteBuffer buffer) {
+    public InventoryRequestPacket(ByteBuffer buffer) {
         super(PacketType.INVENTORY_REQUEST, buffer);
     }
 
-    public InventoryRequestPackage(DataInputStream dataInputStream) throws IOException {
+    public InventoryRequestPacket(DataInputStream dataInputStream) throws IOException {
         super(PacketType.INVENTORY_REQUEST, dataInputStream);
     }
 

@@ -6,8 +6,6 @@ import java.util.Map;
 public enum PacketType {
     MULTIPACKET,
 
-    PLAYERNAME,
-
     JOIN,
 
     QUIT,
@@ -18,11 +16,9 @@ public enum PacketType {
 
     COMMAND,
 
-    INVENTORY_SAVE,
-
     INVENTORY_REQUEST,
 
-    INVENTORY_LOAD;
+    INVENTORY_DATA;
 
     private static Map<Integer, PacketType> mapByOrdinal;
 

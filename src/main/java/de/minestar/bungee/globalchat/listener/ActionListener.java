@@ -22,7 +22,8 @@ import de.minestar.bungee.globalchat.core.MineServerContainer;
 import de.minestar.bungee.globalchat.core.PlayerManager;
 import de.minestar.protocol.newpackets.NetworkPacket;
 import de.minestar.protocol.newpackets.PacketHandler;
-import de.minestar.protocol.newpackets.packets.InventoryRequestPackage;
+import de.minestar.protocol.newpackets.packets.InventoryDataPacket;
+import de.minestar.protocol.newpackets.packets.InventoryRequestPacket;
 
 public class ActionListener implements Listener {
 
@@ -46,7 +47,6 @@ public class ActionListener implements Listener {
                 this.container.addServer(new MineServer(serverInfo.getName(), ChatColor.RED));
             }
         }
-
     }
 
     @Subscribe
@@ -61,9 +61,6 @@ public class ActionListener implements Listener {
 
         // get the server
         MineServer server = this.container.getServer(sender.getServer().getInfo().getName());
-
-        // send testpackage
-        this.sendTestPackages(sender, server, server.buildMessage(sender.getDisplayName(), event.getMessage()));
 
         if (server != null) {
             // build message
@@ -82,41 +79,10 @@ public class ActionListener implements Listener {
         }
     }
 
-    private void sendTestPackages(ProxiedPlayer sender, MineServer server, String message) {
-    }
-
-    // private void sendPackage(ProxiedPlayer sender, MineServer server, MultiPacket packet) {
-    // try {
-    // String channelName = "globalchat";
-    // sender.getServer().sendData(channelName, packet.getByteOutputStream().toByteArray());
-    // } catch (Exception e) {
-    // e.printStackTrace();
-    // }
-    // }
-
     @Subscribe
     public void onServerConnected(ServerConnectedEvent event) {
         System.out.println("ServerConnectedEvent");
-        // if (this.playerManager.updatePlayer(event.getPlayer()) &&
-        // this.playerManager.hasInventory(event.getPlayer())) {
-        // // TODO: update the inventory with the old one!
-        // try {
-        // System.out.println("Sending inventory...");
-        // // Packet packet = Packet.createPackage("Forward",
-        // event.getServer().getInfo().getName(), PacketType.INVENTORY_SEND,
-        // this.playerManager.getInventory(event.getPlayer()));
-        //
-        // // get the sender
-        // ProxiedPlayer sender = event.getPlayer();
-        //
-        // // get the server
-        // MineServer server =
-        // this.container.getServer(event.getServer().getInfo().getName());
-        // // this.sendPackage(sender, server, packet);
-        // } catch (IOException e) {
-        // e.printStackTrace();
-        // }
-        // }
+        this.playerManager.updatePlayer(event.getPlayer(), event.getServer().getInfo());
     }
 
     @Subscribe
@@ -146,33 +112,53 @@ public class ActionListener implements Listener {
     public void onPluginMessage(PluginMessageEvent event) {
         // correct channel
         if (!event.getTag().equalsIgnoreCase(PacketHandler.CHANNEL)) {
+            System.out.println("--------------------------------");
+            System.out.println("wrong channel: " + event.getTag());
             return;
         }
 
         // get packet
+        System.out.println("----------------------");
+        System.out.println("received package...");
         NetworkPacket packet = PacketHandler.INSTANCE.extractPacket(event.getData());
         if (packet != null) {
+            System.out.println("PACKET: " + packet.getType());
             switch (packet.getType()) {
                 case INVENTORY_REQUEST : {
-                    this.handleInventoryRequest(event.getSender().getAddress(), (InventoryRequestPackage) packet);
+                    this.handleInventoryRequestPacket(event.getSender().getAddress(), (InventoryRequestPacket) packet);
+                    break;
+                }
+                case INVENTORY_DATA : {
+                    this.handleInventoryDataPacket((InventoryDataPacket) packet);
                     break;
                 }
                 default : {
                     break;
                 }
             }
+        } else {
+            System.out.println("invalid packet!");
         }
     }
 
-    private void handleInventoryRequest(InetSocketAddress adress, InventoryRequestPackage packet) {
+    private void handleInventoryDataPacket(InventoryDataPacket packet) {
+        System.out.println("INVENTORY_DATA received from player: " + packet.getPlayerName());
+        this.playerManager.addInventory(packet.getPlayerName(), packet.getData());
+    }
+
+    private void handleInventoryRequestPacket(InetSocketAddress adress, InventoryRequestPacket packet) {
         System.out.println("INVENTORY_REQUEST from player: " + packet.getPlayerName());
 
-        ServerInfo server = getServerByAdress(adress);
-
-        if (server != null) {
-            System.out.println("Sending answer...");
-            InventoryRequestPackage answerPacket = new InventoryRequestPackage("This is an answer!");
-            PacketHandler.INSTANCE.send(answerPacket, server, PacketHandler.CHANNEL);
+        if (this.playerManager.isConnected(packet.getPlayerName()) && this.playerManager.hasInventory(packet.getPlayerName())) {
+            System.out.println("player has inventory stored!");
+            ServerInfo server = getServerByAdress(adress);
+            if (server != null) {
+                InventoryDataPacket answerPacket = new InventoryDataPacket(packet.getPlayerName(), this.playerManager.getInventory(packet.getPlayerName()));
+                PacketHandler.INSTANCE.send(answerPacket, server, PacketHandler.CHANNEL);
+                this.playerManager.removeInventory(packet.getPlayerName());
+            }
+        } else {
+            System.out.println("no inventory for player stored or player offline!");
         }
     }
 }
