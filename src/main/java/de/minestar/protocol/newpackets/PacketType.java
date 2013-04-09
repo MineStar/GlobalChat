@@ -34,7 +34,6 @@ public enum PacketType {
     }
 
     public static PacketType get(int ordinal) {
-        System.out.println("size of: " + mapByOrdinal.size());
         return mapByOrdinal.get(ordinal);
     }
 }
