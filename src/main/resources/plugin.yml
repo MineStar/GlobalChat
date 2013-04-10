@@ -1,4 +1,4 @@
-name: GlobalChat
-main: de.minestar.bungee.globalchat.core.Core
-version: 1
+name: BungeeInventories
+main: de.minestar.bungee.bungeeinventories.core.Core
+version: 0.0.1
 author: GeMoschen

@@ -1,4 +1,4 @@
-package de.minestar.protocol.newpackets;
+package de.minestar.bungee.bungeeinventories.protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;

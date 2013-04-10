@@ -1,4 +1,4 @@
-package de.minestar.bungee.globalchat.listener;
+package de.minestar.bungee.bungeeinventories.listener;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -13,18 +13,18 @@ import net.md_5.bungee.api.plugin.Listener;
 
 import com.google.common.eventbus.Subscribe;
 
-import de.minestar.bungee.globalchat.data.ChatColor;
-import de.minestar.bungee.globalchat.data.DataPacketHandler;
-import de.minestar.bungee.globalchat.data.MineServer;
-import de.minestar.bungee.globalchat.data.MineServerContainer;
-import de.minestar.bungee.globalchat.data.PlayerManager;
-import de.minestar.protocol.newpackets.NetworkPacket;
-import de.minestar.protocol.newpackets.packets.DataOKPacket;
-import de.minestar.protocol.newpackets.packets.DataRequestPacket;
-import de.minestar.protocol.newpackets.packets.DataSendPacket;
-import de.minestar.protocol.newpackets.packets.ServerchangeDenyPacket;
-import de.minestar.protocol.newpackets.packets.ServerchangeOKPacket;
-import de.minestar.protocol.newpackets.packets.ServerchangeRequestPacket;
+import de.minestar.bungee.bungeeinventories.data.ChatColor;
+import de.minestar.bungee.bungeeinventories.data.DataPacketHandler;
+import de.minestar.bungee.bungeeinventories.data.MineServer;
+import de.minestar.bungee.bungeeinventories.data.MineServerContainer;
+import de.minestar.bungee.bungeeinventories.data.PlayerManager;
+import de.minestar.bungee.bungeeinventories.protocol.NetworkPacket;
+import de.minestar.bungee.bungeeinventories.protocol.packets.DataOKPacket;
+import de.minestar.bungee.bungeeinventories.protocol.packets.DataRequestPacket;
+import de.minestar.bungee.bungeeinventories.protocol.packets.DataSendPacket;
+import de.minestar.bungee.bungeeinventories.protocol.packets.ServerchangeDenyPacket;
+import de.minestar.bungee.bungeeinventories.protocol.packets.ServerchangeOKPacket;
+import de.minestar.bungee.bungeeinventories.protocol.packets.ServerchangeRequestPacket;
 
 public class ActionListener implements Listener {
 

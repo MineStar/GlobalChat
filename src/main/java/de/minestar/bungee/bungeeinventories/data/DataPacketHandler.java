@@ -1,17 +1,17 @@
-package de.minestar.bungee.globalchat.data;
+package de.minestar.bungee.bungeeinventories.data;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import de.minestar.protocol.newpackets.BungeePacketHandler;
-import de.minestar.protocol.newpackets.NetworkPacket;
-import de.minestar.protocol.newpackets.PacketType;
-import de.minestar.protocol.newpackets.packets.DataOKPacket;
-import de.minestar.protocol.newpackets.packets.DataRequestPacket;
-import de.minestar.protocol.newpackets.packets.DataSendPacket;
-import de.minestar.protocol.newpackets.packets.ServerchangeDenyPacket;
-import de.minestar.protocol.newpackets.packets.ServerchangeOKPacket;
-import de.minestar.protocol.newpackets.packets.ServerchangeRequestPacket;
+import de.minestar.bungee.bungeeinventories.protocol.BungeePacketHandler;
+import de.minestar.bungee.bungeeinventories.protocol.NetworkPacket;
+import de.minestar.bungee.bungeeinventories.protocol.PacketType;
+import de.minestar.bungee.bungeeinventories.protocol.packets.DataOKPacket;
+import de.minestar.bungee.bungeeinventories.protocol.packets.DataRequestPacket;
+import de.minestar.bungee.bungeeinventories.protocol.packets.DataSendPacket;
+import de.minestar.bungee.bungeeinventories.protocol.packets.ServerchangeDenyPacket;
+import de.minestar.bungee.bungeeinventories.protocol.packets.ServerchangeOKPacket;
+import de.minestar.bungee.bungeeinventories.protocol.packets.ServerchangeRequestPacket;
 
 public class DataPacketHandler extends BungeePacketHandler {
 

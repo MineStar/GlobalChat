@@ -1,8 +1,8 @@
-package de.minestar.bungee.globalchat.data;
+package de.minestar.bungee.bungeeinventories.data;
 
 import java.util.HashMap;
 
-import de.minestar.bungee.globalchat.core.Core;
+import de.minestar.bungee.bungeeinventories.core.Core;
 
 public class MineServerContainer {
 

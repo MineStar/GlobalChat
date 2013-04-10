@@ -1,11 +1,11 @@
-package de.minestar.protocol.newpackets.packets;
+package de.minestar.bungee.bungeeinventories.protocol.packets;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import de.minestar.protocol.newpackets.NetworkPacket;
-import de.minestar.protocol.newpackets.PacketType;
+import de.minestar.bungee.bungeeinventories.protocol.NetworkPacket;
+import de.minestar.bungee.bungeeinventories.protocol.PacketType;
 
 public class ServerchangeOKPacket extends NetworkPacket {
 

@@ -1,4 +1,4 @@
-package de.minestar.protocol.newpackets;
+package de.minestar.bungee.bungeeinventories.protocol;
 
 public enum BungeeSubChannel {
 

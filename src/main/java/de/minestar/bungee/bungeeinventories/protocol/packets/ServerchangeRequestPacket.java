@@ -1,34 +1,30 @@
-package de.minestar.protocol.newpackets.packets;
+package de.minestar.bungee.bungeeinventories.protocol.packets;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import de.minestar.protocol.newpackets.NetworkPacket;
-import de.minestar.protocol.newpackets.PacketType;
+import de.minestar.bungee.bungeeinventories.protocol.NetworkPacket;
+import de.minestar.bungee.bungeeinventories.protocol.PacketType;
 
-public class DataSendPacket extends NetworkPacket {
+public class ServerchangeRequestPacket extends NetworkPacket {
 
-    private final static PacketType thisPacketType = PacketType.DATA_SEND;
+    private final static PacketType thisPacketType = PacketType.SERVERCHANGE_REQUEST;
 
     private String playerName;
     private String serverName;
-    private int dataLength;
-    private byte[] data;
 
-    public DataSendPacket(String playerName, String serverName, byte[] data) {
+    public ServerchangeRequestPacket(String playerName, String serverName) {
         super(thisPacketType);
         this.playerName = playerName;
         this.serverName = serverName;
-        this.dataLength = data.length;
-        this.data = data;
     }
 
-    public DataSendPacket(PacketType type) {
+    public ServerchangeRequestPacket(PacketType type) {
         super(thisPacketType);
     }
 
-    public DataSendPacket(DataInputStream dataInputStream) throws IOException {
+    public ServerchangeRequestPacket(DataInputStream dataInputStream) throws IOException {
         super(thisPacketType, dataInputStream);
     }
 
@@ -40,17 +36,12 @@ public class DataSendPacket extends NetworkPacket {
     public void onSend(DataOutputStream dataOutputStream) throws IOException {
         dataOutputStream.writeUTF(this.playerName);
         dataOutputStream.writeUTF(this.serverName);
-        dataOutputStream.writeInt(this.dataLength);
-        dataOutputStream.write(this.data);
     }
 
     @Override
     public void onReceive(DataInputStream dataInputStream) throws IOException {
         this.playerName = dataInputStream.readUTF();
         this.serverName = dataInputStream.readUTF();
-        this.dataLength = dataInputStream.readInt();
-        this.data = new byte[this.dataLength];
-        dataInputStream.read(this.data);
     }
 
     public String getPlayerName() {
@@ -59,13 +50,5 @@ public class DataSendPacket extends NetworkPacket {
 
     public String getServerName() {
         return serverName;
-    }
-
-    public int getDataLength() {
-        return dataLength;
-    }
-
-    public byte[] getData() {
-        return data;
     }
 }
