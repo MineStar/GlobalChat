@@ -1,4 +1,4 @@
-package de.minestar.bungee.globalchat.core;
+package de.minestar.bungee.globalchat.data;
 
 public class MineServer {
     private final String name;

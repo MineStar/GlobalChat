@@ -2,6 +2,8 @@ package de.minestar.bungee.globalchat.core;
 
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
+import de.minestar.bungee.globalchat.data.DataPacketHandler;
+import de.minestar.bungee.globalchat.data.PlayerManager;
 import de.minestar.bungee.globalchat.listener.ActionListener;
 
 public class Core extends Plugin {

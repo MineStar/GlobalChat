@@ -1,4 +1,4 @@
-package de.minestar.bungee.globalchat.core;
+package de.minestar.bungee.globalchat.data;
 
 import java.io.DataInputStream;
 import java.io.IOException;

@@ -13,11 +13,11 @@ import net.md_5.bungee.api.plugin.Listener;
 
 import com.google.common.eventbus.Subscribe;
 
-import de.minestar.bungee.globalchat.core.ChatColor;
-import de.minestar.bungee.globalchat.core.DataPacketHandler;
-import de.minestar.bungee.globalchat.core.MineServer;
-import de.minestar.bungee.globalchat.core.MineServerContainer;
-import de.minestar.bungee.globalchat.core.PlayerManager;
+import de.minestar.bungee.globalchat.data.ChatColor;
+import de.minestar.bungee.globalchat.data.DataPacketHandler;
+import de.minestar.bungee.globalchat.data.MineServer;
+import de.minestar.bungee.globalchat.data.MineServerContainer;
+import de.minestar.bungee.globalchat.data.PlayerManager;
 import de.minestar.protocol.newpackets.NetworkPacket;
 import de.minestar.protocol.newpackets.packets.DataOKPacket;
 import de.minestar.protocol.newpackets.packets.DataRequestPacket;
