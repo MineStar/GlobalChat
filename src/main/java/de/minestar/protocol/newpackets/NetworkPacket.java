@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 public abstract class NetworkPacket {
 
@@ -14,21 +13,13 @@ public abstract class NetworkPacket {
         this.type = type;
     }
 
-    public NetworkPacket(PacketType type, ByteBuffer buffer) {
-        this(type);
-        onReceive(buffer);
-    }
-
     public NetworkPacket(PacketType type, DataInputStream dataInputStream) throws IOException {
         this(type);
         onReceive(dataInputStream);
     }
+
     public final PacketType getType() {
         return type;
-    }
-
-    public final void pack(ByteBuffer buffer) {
-        onSend(buffer);
     }
 
     public final ByteArrayOutputStream pack() {
@@ -42,10 +33,6 @@ public abstract class NetworkPacket {
             return null;
         }
     }
-
-    public abstract void onSend(ByteBuffer buffer);
-
-    public abstract void onReceive(ByteBuffer buffer);
 
     public abstract void onSend(DataOutputStream dataOutputStream) throws IOException;
 

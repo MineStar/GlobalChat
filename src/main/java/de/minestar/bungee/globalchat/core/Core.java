@@ -9,7 +9,7 @@ public class Core extends Plugin {
     public static Core INSTANCE;
     public final String NAME = "GlobalChat";
 
-    private InventoryPacketHandler inventoryPacketHandler;
+    private DataPacketHandler dataPacketHandler;
 
     public static void log(String message) {
         System.out.println("[ " + INSTANCE.NAME + " ] " + message);
@@ -24,10 +24,10 @@ public class Core extends Plugin {
     public void onEnable() {
         Core.INSTANCE = this;
 
-        this.inventoryPacketHandler = new InventoryPacketHandler("MS|InvSync");
+        this.dataPacketHandler = new DataPacketHandler("MS_InvSync");
 
-        ProxyServer.getInstance().registerChannel(this.inventoryPacketHandler.getChannel());
-        ProxyServer.getInstance().getPluginManager().registerListener(this, new ActionListener(this.inventoryPacketHandler, new PlayerManager()));
+        ProxyServer.getInstance().registerChannel(this.dataPacketHandler.getChannel());
+        ProxyServer.getInstance().getPluginManager().registerListener(this, new ActionListener(this.dataPacketHandler, new PlayerManager()));
         Core.log("Enabled!");
     }
 

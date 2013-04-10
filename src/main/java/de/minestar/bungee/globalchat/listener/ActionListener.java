@@ -8,32 +8,33 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ChatEvent;
-import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
-import net.md_5.bungee.api.event.ServerConnectedEvent;
-import net.md_5.bungee.api.event.ServerKickEvent;
 import net.md_5.bungee.api.plugin.Listener;
 
 import com.google.common.eventbus.Subscribe;
 
 import de.minestar.bungee.globalchat.core.ChatColor;
-import de.minestar.bungee.globalchat.core.InventoryPacketHandler;
+import de.minestar.bungee.globalchat.core.DataPacketHandler;
 import de.minestar.bungee.globalchat.core.MineServer;
 import de.minestar.bungee.globalchat.core.MineServerContainer;
 import de.minestar.bungee.globalchat.core.PlayerManager;
 import de.minestar.protocol.newpackets.NetworkPacket;
-import de.minestar.protocol.newpackets.packets.InventoryDataPacket;
-import de.minestar.protocol.newpackets.packets.InventoryRequestPacket;
+import de.minestar.protocol.newpackets.packets.DataOKPacket;
+import de.minestar.protocol.newpackets.packets.DataRequestPacket;
+import de.minestar.protocol.newpackets.packets.DataSendPacket;
+import de.minestar.protocol.newpackets.packets.ServerchangeDenyPacket;
+import de.minestar.protocol.newpackets.packets.ServerchangeOKPacket;
+import de.minestar.protocol.newpackets.packets.ServerchangeRequestPacket;
 
 public class ActionListener implements Listener {
 
+    private DataPacketHandler dataPacketHandler;
     private MineServerContainer container;
-    private InventoryPacketHandler inventoryPacketHandler;
     private PlayerManager playerManager;
 
-    public ActionListener(InventoryPacketHandler inventoryPacketHandler, PlayerManager playerManager) {
+    public ActionListener(DataPacketHandler dataPacketHandler, PlayerManager playerManager) {
+        this.dataPacketHandler = dataPacketHandler;
         this.container = new MineServerContainer();
-        this.inventoryPacketHandler = inventoryPacketHandler;
         this.playerManager = playerManager;
         this.loadServers();
     }
@@ -81,26 +82,6 @@ public class ActionListener implements Listener {
         }
     }
 
-    @Subscribe
-    public void onServerConnected(ServerConnectedEvent event) {
-        System.out.println("ServerConnectedEvent");
-        this.playerManager.updatePlayer(event.getPlayer(), event.getServer().getInfo());
-    }
-
-    @Subscribe
-    public void onServerKick(ServerKickEvent event) {
-        System.out.println("ServerKickEvent");
-        this.playerManager.removeInventory(event.getPlayer());
-        this.playerManager.removePlayer(event.getPlayer());
-    }
-
-    @Subscribe
-    public void onDisconnect(PlayerDisconnectEvent event) {
-        System.out.println("PlayerDisconnectEvent");
-        this.playerManager.removeInventory(event.getPlayer());
-        this.playerManager.removePlayer(event.getPlayer());
-    }
-
     public static ServerInfo getServerByAdress(InetSocketAddress adress) {
         for (ServerInfo info : ProxyServer.getInstance().getServers().values()) {
             if (info.getAddress().equals(adress)) {
@@ -113,54 +94,91 @@ public class ActionListener implements Listener {
     @Subscribe
     public void onPluginMessage(PluginMessageEvent event) {
         // correct channel
-        if (!event.getTag().equalsIgnoreCase(this.inventoryPacketHandler.getChannel())) {
-            System.out.println("--------------------------------");
-            System.out.println("wrong channel: " + event.getTag());
+        if (!event.getTag().equalsIgnoreCase(this.dataPacketHandler.getChannel())) {
             return;
         }
 
         // get packet
-        System.out.println("----------------------");
-        System.out.println("received package...");
-        NetworkPacket packet = this.inventoryPacketHandler.extractPacket(event.getData());
+        NetworkPacket packet = this.dataPacketHandler.extractPacket(event.getData());
         if (packet != null) {
-            System.out.println("PACKET: " + packet.getType());
-            switch (packet.getType()) {
-                case INVENTORY_REQUEST : {
-                    this.handleInventoryRequestPacket(event.getSender().getAddress(), (InventoryRequestPacket) packet);
-                    break;
+            ServerInfo serverInfo = getServerByAdress(event.getSender().getAddress());
+            if (serverInfo != null) {
+                switch (packet.getType()) {
+                    case SERVERCHANGE_REQUEST : {
+                        this.handleServerchangeRequest(serverInfo, (ServerchangeRequestPacket) packet);
+                        break;
+                    }
+                    case DATA_SEND : {
+                        this.handleDataSend(serverInfo, (DataSendPacket) packet);
+                        break;
+                    }
+                    case DATA_REQUEST : {
+                        this.handleDataRequest(serverInfo, (DataRequestPacket) packet);
+                        break;
+                    }
+                    case DATA_OK : {
+                        this.handleDataOK(serverInfo, (DataOKPacket) packet);
+                        break;
+                    }
+                    default : {
+                        break;
+                    }
                 }
-                case INVENTORY_DATA : {
-                    this.handleInventoryDataPacket((InventoryDataPacket) packet);
-                    break;
-                }
-                default : {
-                    break;
-                }
+            } else {
+                System.out.println("ERROR: Server not found!");
             }
         } else {
-            System.out.println("invalid packet!");
+            System.out.println("ERROR: Invalid packet received!");
         }
     }
 
-    private void handleInventoryDataPacket(InventoryDataPacket packet) {
-        System.out.println("INVENTORY_DATA received from player: " + packet.getPlayerName());
-        this.playerManager.addInventory(packet.getPlayerName(), packet.getData());
+    private void handleDataOK(ServerInfo serverInfo, DataOKPacket packet) {
+        this.playerManager.removeInventory(packet.getPlayerName());
     }
 
-    private void handleInventoryRequestPacket(InetSocketAddress adress, InventoryRequestPacket packet) {
-        System.out.println("INVENTORY_REQUEST from player: " + packet.getPlayerName());
+    private void handleDataRequest(ServerInfo serverInfo, DataRequestPacket packet) {
+        if (this.playerManager.hasInventory(packet.getPlayerName())) {
+            DataSendPacket answer = new DataSendPacket(packet.getPlayerName(), serverInfo.getName(), this.playerManager.getInventory(packet.getPlayerName()));
+            this.dataPacketHandler.send(answer, serverInfo, this.dataPacketHandler.getChannel());
+        }
+    }
 
-        if (this.playerManager.isConnected(packet.getPlayerName()) && this.playerManager.hasInventory(packet.getPlayerName())) {
-            System.out.println("player has inventory stored!");
-            ServerInfo server = getServerByAdress(adress);
-            if (server != null) {
-                InventoryDataPacket answerPacket = new InventoryDataPacket(packet.getPlayerName(), this.playerManager.getInventory(packet.getPlayerName()));
-                this.inventoryPacketHandler.send(answerPacket, server, this.inventoryPacketHandler.getChannel());
-                this.playerManager.removeInventory(packet.getPlayerName());
-            }
+    private void handleDataSend(ServerInfo serverInfo, DataSendPacket packet) {
+        this.playerManager.addInventory(packet.getPlayerName(), packet.getData());
+
+        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(packet.getPlayerName());
+        ServerInfo toServer = ProxyServer.getInstance().getServerInfo(packet.getServerName());
+        if (player != null && toServer != null) {
+            // teleport player to another server
+            player.connect(toServer);
+        }
+    }
+
+    private void handleServerchangeRequest(ServerInfo serverInfo, ServerchangeRequestPacket packet) {
+        MineServer server = this.container.getServer(packet.getServerName());
+        if (server == null) {
+            // send ServerchangeDenyPacket
+            ServerchangeDenyPacket answer = new ServerchangeDenyPacket(packet.getPlayerName(), "Server '" + packet.getServerName() + "' not found!");
+            this.dataPacketHandler.send(answer, serverInfo, this.dataPacketHandler.getChannel());
         } else {
-            System.out.println("no inventory for player stored or player offline!");
+            // server must be != null (online-check?)
+            ServerInfo toServer = ProxyServer.getInstance().getServerInfo(packet.getServerName());
+            if (toServer == null) {
+                ServerchangeDenyPacket answer = new ServerchangeDenyPacket(packet.getPlayerName(), "Server '" + packet.getServerName() + "' not found!");
+                this.dataPacketHandler.send(answer, serverInfo, this.dataPacketHandler.getChannel());
+                return;
+            }
+
+            // servers must be different
+            if (toServer.getName().equalsIgnoreCase(serverInfo.getName())) {
+                ServerchangeDenyPacket answer = new ServerchangeDenyPacket(packet.getPlayerName(), "You are already connected to '" + packet.getServerName() + "'!");
+                this.dataPacketHandler.send(answer, serverInfo, this.dataPacketHandler.getChannel());
+                return;
+            }
+
+            // send ServerchangeOKPacket
+            ServerchangeOKPacket answer = new ServerchangeOKPacket(packet.getPlayerName(), packet.getServerName(), "Connecting to server '" + packet.getServerName() + "'...");
+            this.dataPacketHandler.send(answer, serverInfo, this.dataPacketHandler.getChannel());
         }
     }
 }
