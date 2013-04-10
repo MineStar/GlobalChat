@@ -6,6 +6,7 @@ import java.io.IOException;
 import de.minestar.bungee.bungeeinventories.protocol.BungeePacketHandler;
 import de.minestar.bungee.bungeeinventories.protocol.NetworkPacket;
 import de.minestar.bungee.bungeeinventories.protocol.PacketType;
+import de.minestar.bungee.bungeeinventories.protocol.packets.ChatDeathPacket;
 import de.minestar.bungee.bungeeinventories.protocol.packets.DataOKPacket;
 import de.minestar.bungee.bungeeinventories.protocol.packets.DataRequestPacket;
 import de.minestar.bungee.bungeeinventories.protocol.packets.DataSendPacket;
@@ -39,6 +40,9 @@ public class DataPacketHandler extends BungeePacketHandler {
             }
             case DATA_OK : {
                 return new DataOKPacket(dataInputStream);
+            }
+            case CHAT_DEATH : {
+                return new ChatDeathPacket(dataInputStream);
             }
             default : {
                 return null;

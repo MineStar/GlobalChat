@@ -16,7 +16,11 @@ public enum PacketType {
 
     DATA_REQUEST,
 
-    DATA_OK;
+    DATA_OK,
+
+    CHAT_MESSAGE,
+
+    CHAT_DEATH;
 
     private static Map<Integer, PacketType> mapByOrdinal;
 

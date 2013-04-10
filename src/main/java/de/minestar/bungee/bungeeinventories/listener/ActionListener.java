@@ -8,7 +8,10 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ChatEvent;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
+import net.md_5.bungee.api.event.ServerConnectedEvent;
+import net.md_5.bungee.api.event.ServerKickEvent;
 import net.md_5.bungee.api.plugin.Listener;
 
 import com.google.common.eventbus.Subscribe;
@@ -19,6 +22,7 @@ import de.minestar.bungee.bungeeinventories.data.MineServer;
 import de.minestar.bungee.bungeeinventories.data.MineServerContainer;
 import de.minestar.bungee.bungeeinventories.data.PlayerManager;
 import de.minestar.bungee.bungeeinventories.protocol.NetworkPacket;
+import de.minestar.bungee.bungeeinventories.protocol.packets.ChatDeathPacket;
 import de.minestar.bungee.bungeeinventories.protocol.packets.DataOKPacket;
 import de.minestar.bungee.bungeeinventories.protocol.packets.DataRequestPacket;
 import de.minestar.bungee.bungeeinventories.protocol.packets.DataSendPacket;
@@ -104,6 +108,51 @@ public class ActionListener implements Listener {
     }
 
     @Subscribe
+    public void onPlayerConnected(ServerConnectedEvent event) {
+        if (!this.playerManager.updatePlayer(event.getPlayer(), event.getServer().getInfo())) {
+            for (ServerInfo otherServer : ProxyServer.getInstance().getServers().values()) {
+                // send message to everyone on the server
+                Collection<ProxiedPlayer> playerList = otherServer.getPlayers();
+                for (ProxiedPlayer player : playerList) {
+                    player.sendMessage(ChatColor.YELLOW + event.getPlayer().getName() + " joined the game.");
+                }
+            }
+        }
+    }
+
+    @Subscribe
+    public void onPlayerDisconnect(PlayerDisconnectEvent event) {
+        // remove the player
+        this.playerManager.removePlayer(event.getPlayer());
+
+        // inform other players, only if there is no inventory saved!
+        if (!this.playerManager.hasInventory(event.getPlayer().getName())) {
+            for (ServerInfo otherServer : ProxyServer.getInstance().getServers().values()) {
+                // send message to everyone on the server
+                Collection<ProxiedPlayer> playerList = otherServer.getPlayers();
+                for (ProxiedPlayer player : playerList) {
+                    player.sendMessage(ChatColor.YELLOW + event.getPlayer().getName() + " left the game.");
+                }
+            }
+        }
+    }
+
+    @Subscribe
+    public void onPlayerKick(ServerKickEvent event) {
+        // remove the player
+        this.playerManager.removePlayer(event.getPlayer());
+
+        // inform other players, only if there is no inventory saved!
+        for (ServerInfo otherServer : ProxyServer.getInstance().getServers().values()) {
+            // send message to everyone on the server
+            Collection<ProxiedPlayer> playerList = otherServer.getPlayers();
+            for (ProxiedPlayer player : playerList) {
+                player.sendMessage(ChatColor.YELLOW + event.getPlayer().getName() + " left the game.");
+            }
+        }
+    }
+
+    @Subscribe
     public void onPluginMessage(PluginMessageEvent event) {
         // correct channel
         if (!event.getTag().equalsIgnoreCase(this.dataPacketHandler.getChannel())) {
@@ -132,6 +181,10 @@ public class ActionListener implements Listener {
                         this.handleDataOK(serverInfo, (DataOKPacket) packet);
                         break;
                     }
+                    case CHAT_DEATH : {
+                        this.handleChatDeath(serverInfo, (ChatDeathPacket) packet);
+                        break;
+                    }
                     default : {
                         break;
                     }
@@ -141,6 +194,21 @@ public class ActionListener implements Listener {
             }
         } else {
             System.out.println("ERROR: Invalid packet received!");
+        }
+    }
+
+    private void handleChatDeath(ServerInfo serverInfo, ChatDeathPacket packet) {
+        for (ServerInfo otherServer : ProxyServer.getInstance().getServers().values()) {
+            // ignore, if it is the same server
+            if (serverInfo.getName().equalsIgnoreCase(otherServer.getName())) {
+                continue;
+            }
+
+            // send message to everyone on the server
+            Collection<ProxiedPlayer> playerList = otherServer.getPlayers();
+            for (ProxiedPlayer player : playerList) {
+                player.sendMessage(packet.getMessage());
+            }
         }
     }
 

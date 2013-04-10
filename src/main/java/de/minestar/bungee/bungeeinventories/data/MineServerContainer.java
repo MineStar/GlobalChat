@@ -18,6 +18,14 @@ public class MineServerContainer {
     }
 
     public MineServer getServer(String serverName) {
-        return this.serverList.get(serverName);
+        MineServer server = this.serverList.get(serverName);
+        if (server == null) {
+            for (MineServer other : this.serverList.values()) {
+                if (other.getName().equalsIgnoreCase(serverName)) {
+                    return other;
+                }
+            }
+        }
+        return server;
     }
 }
