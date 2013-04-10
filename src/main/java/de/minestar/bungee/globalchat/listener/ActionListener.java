@@ -28,6 +28,27 @@ import de.minestar.protocol.newpackets.packets.ServerchangeRequestPacket;
 
 public class ActionListener implements Listener {
 
+    // /////////////////////////////////////////
+    //
+    // STATIC-Methods
+    //
+    // /////////////////////////////////////////
+
+    public static ServerInfo getServerByAdress(InetSocketAddress adress) {
+        for (ServerInfo info : ProxyServer.getInstance().getServers().values()) {
+            if (info.getAddress().equals(adress)) {
+                return info;
+            }
+        }
+        return null;
+    }
+
+    // /////////////////////////////////////////
+    //
+    // CLASS-Methods
+    //
+    // /////////////////////////////////////////
+
     private DataPacketHandler dataPacketHandler;
     private MineServerContainer container;
     private PlayerManager playerManager;
@@ -80,15 +101,6 @@ public class ActionListener implements Listener {
                 player.sendMessage(message);
             }
         }
-    }
-
-    public static ServerInfo getServerByAdress(InetSocketAddress adress) {
-        for (ServerInfo info : ProxyServer.getInstance().getServers().values()) {
-            if (info.getAddress().equals(adress)) {
-                return info;
-            }
-        }
-        return null;
     }
 
     @Subscribe
