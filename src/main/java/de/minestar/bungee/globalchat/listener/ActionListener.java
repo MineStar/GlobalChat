@@ -17,21 +17,23 @@ import net.md_5.bungee.api.plugin.Listener;
 import com.google.common.eventbus.Subscribe;
 
 import de.minestar.bungee.globalchat.core.ChatColor;
+import de.minestar.bungee.globalchat.core.InventoryPacketHandler;
 import de.minestar.bungee.globalchat.core.MineServer;
 import de.minestar.bungee.globalchat.core.MineServerContainer;
 import de.minestar.bungee.globalchat.core.PlayerManager;
 import de.minestar.protocol.newpackets.NetworkPacket;
-import de.minestar.protocol.newpackets.PacketHandler;
 import de.minestar.protocol.newpackets.packets.InventoryDataPacket;
 import de.minestar.protocol.newpackets.packets.InventoryRequestPacket;
 
 public class ActionListener implements Listener {
 
     private MineServerContainer container;
+    private InventoryPacketHandler inventoryPacketHandler;
     private PlayerManager playerManager;
 
-    public ActionListener(PlayerManager playerManager) {
+    public ActionListener(InventoryPacketHandler inventoryPacketHandler, PlayerManager playerManager) {
         this.container = new MineServerContainer();
+        this.inventoryPacketHandler = inventoryPacketHandler;
         this.playerManager = playerManager;
         this.loadServers();
     }
@@ -111,7 +113,7 @@ public class ActionListener implements Listener {
     @Subscribe
     public void onPluginMessage(PluginMessageEvent event) {
         // correct channel
-        if (!event.getTag().equalsIgnoreCase(PacketHandler.CHANNEL)) {
+        if (!event.getTag().equalsIgnoreCase(this.inventoryPacketHandler.getChannel())) {
             System.out.println("--------------------------------");
             System.out.println("wrong channel: " + event.getTag());
             return;
@@ -120,7 +122,7 @@ public class ActionListener implements Listener {
         // get packet
         System.out.println("----------------------");
         System.out.println("received package...");
-        NetworkPacket packet = PacketHandler.INSTANCE.extractPacket(event.getData());
+        NetworkPacket packet = this.inventoryPacketHandler.extractPacket(event.getData());
         if (packet != null) {
             System.out.println("PACKET: " + packet.getType());
             switch (packet.getType()) {
@@ -154,7 +156,7 @@ public class ActionListener implements Listener {
             ServerInfo server = getServerByAdress(adress);
             if (server != null) {
                 InventoryDataPacket answerPacket = new InventoryDataPacket(packet.getPlayerName(), this.playerManager.getInventory(packet.getPlayerName()));
-                PacketHandler.INSTANCE.send(answerPacket, server, PacketHandler.CHANNEL);
+                this.inventoryPacketHandler.send(answerPacket, server, this.inventoryPacketHandler.getChannel());
                 this.playerManager.removeInventory(packet.getPlayerName());
             }
         } else {

@@ -4,60 +4,54 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.nio.ByteBuffer;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import net.md_5.bungee.api.config.ServerInfo;
-import de.minestar.protocol.newpackets.packets.InventoryDataPacket;
-import de.minestar.protocol.newpackets.packets.InventoryRequestPacket;
 
-public class PacketHandler {
+public abstract class BungeePacketHandler {
 
-    public static final PacketHandler INSTANCE;
-    private static final String BROADCAST = "ALL";
-    public static final String CHANNEL = "GlobalChat";
+    private final String broadcast;
+    private final String channel;
 
-    static {
-        INSTANCE = new PacketHandler();
+    public BungeePacketHandler(String channel) {
+        this(channel, "ALL");
     }
 
-    private static final int MAX_PACKET_SIZE = 32766;
-
-    private final ByteBuffer BUFFER;
-
-    public PacketHandler() {
-        BUFFER = ByteBuffer.allocate(MAX_PACKET_SIZE);
+    public BungeePacketHandler(String channel, String defaultBroadcast) {
+        this.channel = channel;
+        this.broadcast = defaultBroadcast;
     }
 
-    public void send(NetworkPacket packet, ServerInfo server, String channel) {
-        this.send(packet, server, channel, BungeeSubChannel.FORWARD, BROADCAST);
+    public void send(NetworkPacket packet, ServerInfo serverInfo, String channel) {
+        this.send(packet, serverInfo, channel, BungeeSubChannel.FORWARD, this.broadcast);
     }
 
-    public void send(NetworkPacket packet, ServerInfo server, String channel, BungeeSubChannel subChannel, String targetServer) {
+    public void send(NetworkPacket packet, ServerInfo serverInfo, String channel, BungeeSubChannel subChannel, String targetServer) {
         if (packet instanceof MultiPacket) {
             MultiPacket multiPacket = (MultiPacket) packet;
             for (NetworkPacket innerPacket : multiPacket) {
-                sendPacket(innerPacket, server, channel, subChannel, targetServer);
+                sendPacket(innerPacket, serverInfo, channel, subChannel, targetServer);
             }
         } else {
-            sendPacket(packet, server, channel, subChannel, targetServer);
+            sendPacket(packet, serverInfo, channel, subChannel, targetServer);
         }
     }
 
-    public void send(NetworkPacket packet, ServerInfo server, String channel, BungeeSubChannel subChannel) {
+    public void send(NetworkPacket packet, ServerInfo serverInfo, String channel, BungeeSubChannel subChannel) {
         if (packet instanceof MultiPacket) {
             MultiPacket multiPacket = (MultiPacket) packet;
             for (NetworkPacket innerPacket : multiPacket) {
-                sendPacket(innerPacket, server, channel, subChannel, null);
+                sendPacket(innerPacket, serverInfo, channel, subChannel, null);
             }
         } else {
-            sendPacket(packet, server, channel, subChannel, null);
+            sendPacket(packet, serverInfo, channel, subChannel, null);
         }
     }
 
     public final static Charset UFT8 = Charset.forName("UTF-8");
 
-    private void sendPacket(NetworkPacket packet, ServerInfo server, String channel, BungeeSubChannel subChannel, String targetServer) {
+    private void sendPacket(NetworkPacket packet, ServerInfo serverInfo, String channel, BungeeSubChannel subChannel, String targetServer) {
 
         // Packet Head:
         //
@@ -72,29 +66,6 @@ public class PacketHandler {
         // DataLength (Length of the data without any head length)
         // Data (Array of bytes - Must be long as defined in DataLength
         //
-
-        // // Create Head
-        // BUFFER.clear();
-        // // BungeeChannel
-        // BUFFER.put(subChannel.getName().getBytes(UFT8));
-        // // TargetServer
-        // BUFFER.put(targetServer.getBytes(UFT8));
-        //
-        // // Channel
-        // BUFFER.put(channel.getBytes(UFT8));
-        //
-        // // Placeholder
-        // int pos1 = BUFFER.position();
-        // BUFFER.putInt(0);
-        // int pos2 = BUFFER.position();
-        // packet.pack(BUFFER);
-        // BUFFER.putInt(pos1, BUFFER.position() - pos2);
-        //
-        // BUFFER.rewind();
-        //
-        // // Dirty -.-
-        // server.sendData(channel, Arrays.copyOf(BUFFER.array(), BUFFER.limit()));
-        // BUFFER.clear();
 
         try {
             // create streams
@@ -121,7 +92,7 @@ public class PacketHandler {
             dos.write(dataArray);
 
             // send data
-            server.sendData(CHANNEL, bos.toByteArray());
+            serverInfo.sendData(this.channel, bos.toByteArray());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -136,6 +107,10 @@ public class PacketHandler {
             // extract head
             PacketHeadData headData = new PacketHeadData(dataInputStream);
 
+            if (!headData.getSubChannel().equalsIgnoreCase(this.getChannel())) {
+                return null;
+            }
+
             // get data
             int datalength = dataInputStream.readInt();
             byte[] dataArray = new byte[datalength];
@@ -146,21 +121,21 @@ public class PacketHandler {
             dataInputStream = new DataInputStream(bis);
 
             // get packettype
-            PacketType type = PacketType.get(dataInputStream.readInt());
+            PacketType packetType = PacketType.get(dataInputStream.readInt());
 
-            switch (type) {
-                case INVENTORY_REQUEST : {
-                    return new InventoryRequestPacket(dataInputStream);
-                }
-                case INVENTORY_DATA : {
-                    return new InventoryDataPacket(dataInputStream);
-                }
-                default : {
-                    return null;
-                }
-            }
+            return this.handlePacket(packetType, dataInputStream);
         } catch (Exception e) {
             return null;
         }
+    }
+
+    protected abstract NetworkPacket handlePacket(PacketType packetType, DataInputStream dataInputStream) throws IOException;
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public String getBroadcast() {
+        return broadcast;
     }
 }
