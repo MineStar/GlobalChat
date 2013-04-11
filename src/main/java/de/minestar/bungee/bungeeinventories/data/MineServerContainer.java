@@ -3,6 +3,7 @@ package de.minestar.bungee.bungeeinventories.data;
 import java.util.HashMap;
 
 import de.minestar.bungee.bungeeinventories.core.Core;
+import de.minestar.bungee.library.utils.ConsoleUtils;
 
 public class MineServerContainer {
 
@@ -14,7 +15,7 @@ public class MineServerContainer {
 
     public void addServer(MineServer server) {
         this.serverList.put(server.getName(), server);
-        Core.log("registering server '" + server.getName() + "'");
+        ConsoleUtils.printInfo(Core.NAME, "registering server '" + server.getName() + "'");
     }
 
     public MineServer getServer(String serverName) {

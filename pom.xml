@@ -3,8 +3,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.minestar.bungee</groupId>
 	<artifactId>globalchat</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 
+
+	<version>0.0.1-SNAPSHOT</version>
 	<distributionManagement>
 		<!-- use the following if you're not using a snapshot version. -->
 		<repository>
