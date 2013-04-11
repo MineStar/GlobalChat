@@ -3,16 +3,16 @@ package de.minestar.bungee.bungeeinventories.data;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import de.minestar.bungee.bungeeinventories.protocol.BungeePacketHandler;
-import de.minestar.bungee.bungeeinventories.protocol.NetworkPacket;
-import de.minestar.bungee.bungeeinventories.protocol.PacketType;
-import de.minestar.bungee.bungeeinventories.protocol.packets.ChatDeathPacket;
-import de.minestar.bungee.bungeeinventories.protocol.packets.DataOKPacket;
-import de.minestar.bungee.bungeeinventories.protocol.packets.DataRequestPacket;
-import de.minestar.bungee.bungeeinventories.protocol.packets.DataSendPacket;
-import de.minestar.bungee.bungeeinventories.protocol.packets.ServerchangeDenyPacket;
-import de.minestar.bungee.bungeeinventories.protocol.packets.ServerchangeOKPacket;
-import de.minestar.bungee.bungeeinventories.protocol.packets.ServerchangeRequestPacket;
+import de.minestar.bungee.library.protocol.BungeePacketHandler;
+import de.minestar.bungee.library.protocol.NetworkPacket;
+import de.minestar.bungee.library.protocol.PacketType;
+import de.minestar.bungee.library.protocol.packets.ChatDeathPacket;
+import de.minestar.bungee.library.protocol.packets.DataOKPacket;
+import de.minestar.bungee.library.protocol.packets.DataRequestPacket;
+import de.minestar.bungee.library.protocol.packets.DataSendPacket;
+import de.minestar.bungee.library.protocol.packets.ServerchangeDenyPacket;
+import de.minestar.bungee.library.protocol.packets.ServerchangeOKPacket;
+import de.minestar.bungee.library.protocol.packets.ServerchangeRequestPacket;
 
 public class DataPacketHandler extends BungeePacketHandler {
 

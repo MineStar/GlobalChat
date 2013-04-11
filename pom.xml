@@ -33,5 +33,10 @@
 			<artifactId>bungeecord</artifactId>
 			<version>1</version>
 		</dependency>
+		<dependency>
+			<groupId>de.minestar.bungee</groupId>
+			<artifactId>BungeeLibrary</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>
