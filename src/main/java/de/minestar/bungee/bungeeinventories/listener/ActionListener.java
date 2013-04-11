@@ -7,7 +7,6 @@ import java.util.Map;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.event.ServerConnectedEvent;
@@ -23,6 +22,7 @@ import de.minestar.bungee.bungeeinventories.data.MineServerContainer;
 import de.minestar.bungee.bungeeinventories.data.PlayerManager;
 import de.minestar.bungee.library.protocol.NetworkPacket;
 import de.minestar.bungee.library.protocol.packets.ChatDeathPacket;
+import de.minestar.bungee.library.protocol.packets.ChatMessagePacket;
 import de.minestar.bungee.library.protocol.packets.DataOKPacket;
 import de.minestar.bungee.library.protocol.packets.DataRequestPacket;
 import de.minestar.bungee.library.protocol.packets.DataSendPacket;
@@ -73,36 +73,6 @@ public class ActionListener implements Listener {
                 this.container.addServer(new MineServer(serverInfo.getName(), ChatColor.YELLOW));
             } else if (serverInfo.getName().equalsIgnoreCase("survival")) {
                 this.container.addServer(new MineServer(serverInfo.getName(), ChatColor.RED));
-            }
-        }
-    }
-
-    @Subscribe
-    public void onChat(ChatEvent event) {
-        // return?
-        if (event.isCancelled() || event.getSender() == null || !(event.getSender() instanceof ProxiedPlayer) || event.getMessage().startsWith("/")) {
-            return;
-        }
-
-        // get the sender
-        ProxiedPlayer sender = (ProxiedPlayer) event.getSender();
-
-        // get the server
-        MineServer server = this.container.getServer(sender.getServer().getInfo().getName());
-
-        if (server != null) {
-            // build message
-            String message = server.buildMessage(sender.getDisplayName(), event.getMessage());
-
-            // iterate over the playerlist
-            Collection<ProxiedPlayer> playerList = ProxyServer.getInstance().getPlayers();
-            for (ProxiedPlayer player : playerList) {
-                // send only, if the server is different
-                if (sender.getServer().getInfo().getName().equalsIgnoreCase(player.getServer().getInfo().getName())) {
-                    continue;
-                }
-                // send message
-                player.sendMessage(message);
             }
         }
     }
@@ -185,6 +155,10 @@ public class ActionListener implements Listener {
                         this.handleChatDeath(serverInfo, (ChatDeathPacket) packet);
                         break;
                     }
+                    case CHAT_MESSAGE : {
+                        this.handleChatMessage(serverInfo, (ChatMessagePacket) packet);
+                        break;
+                    }
                     default : {
                         break;
                     }
@@ -194,6 +168,30 @@ public class ActionListener implements Listener {
             }
         } else {
             System.out.println("ERROR: Invalid packet received!");
+        }
+    }
+
+    private void handleChatMessage(ServerInfo serverInfo, ChatMessagePacket packet) {
+        MineServer server = this.container.getServer(serverInfo.getName());
+        if (server == null) {
+            return;
+        }
+
+        // build message
+        String message = server.buildMessage(packet.getMessage());
+
+        // iterate over the playerlist
+        for (ServerInfo otherServer : ProxyServer.getInstance().getServers().values()) {
+            // ignore, if it is the same server
+            if (serverInfo.getName().equalsIgnoreCase(otherServer.getName())) {
+                continue;
+            }
+
+            // send message to everyone on the server
+            Collection<ProxiedPlayer> playerList = otherServer.getPlayers();
+            for (ProxiedPlayer player : playerList) {
+                player.sendMessage(message);
+            }
         }
     }
 

@@ -7,6 +7,7 @@ import de.minestar.bungee.library.protocol.BungeePacketHandler;
 import de.minestar.bungee.library.protocol.NetworkPacket;
 import de.minestar.bungee.library.protocol.PacketType;
 import de.minestar.bungee.library.protocol.packets.ChatDeathPacket;
+import de.minestar.bungee.library.protocol.packets.ChatMessagePacket;
 import de.minestar.bungee.library.protocol.packets.DataOKPacket;
 import de.minestar.bungee.library.protocol.packets.DataRequestPacket;
 import de.minestar.bungee.library.protocol.packets.DataSendPacket;
@@ -43,6 +44,9 @@ public class DataPacketHandler extends BungeePacketHandler {
             }
             case CHAT_DEATH : {
                 return new ChatDeathPacket(dataInputStream);
+            }
+            case CHAT_MESSAGE : {
+                return new ChatMessagePacket(dataInputStream);
             }
             default : {
                 return null;

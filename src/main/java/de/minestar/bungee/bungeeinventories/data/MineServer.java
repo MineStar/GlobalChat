@@ -17,8 +17,14 @@ public class MineServer {
         return name;
     }
 
-    public String buildMessage(String playerName, String message) {
-        String text = color + "[] " + ChatColor.GRAY + playerName + ChatColor.WHITE + ": " + message;
-        return text;
+    public String buildMessage(String message) {
+        try {
+            String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
+            String text = color + "[" + firstLetter + "] " + message;
+            return text;
+        } catch (Exception e) {
+            String text = color + "[ ] " + message;
+            return text;
+        }
     }
 }
