@@ -1,5 +1,6 @@
-package de.minestar.bungee.bungeeinventories.data;
+package de.minestar.bungee.bungeeinventories.manager;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 
 import net.md_5.bungee.api.config.ServerInfo;
@@ -7,6 +8,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 public class PlayerManager {
     private HashMap<String, ServerInfo> playerMap = new HashMap<String, ServerInfo>();
+    private HashMap<InetSocketAddress, String> playerConnections = new HashMap<InetSocketAddress, String>();
     private HashMap<String, byte[]> inventoryMap = new HashMap<String, byte[]>();
 
     /**
@@ -17,6 +19,10 @@ public class PlayerManager {
      */
     public boolean addInventory(ProxiedPlayer player, byte[] byteArray) {
         return this.addInventory(player.getName(), byteArray);
+    }
+
+    public String getPlayerNameByAdress(InetSocketAddress adress) {
+        return this.playerConnections.get(adress);
     }
 
     /**
@@ -76,6 +82,7 @@ public class PlayerManager {
     public boolean updatePlayer(ProxiedPlayer player, ServerInfo serverInfo) {
         boolean wasConnected = this.isConnected(player);
         this.playerMap.put(player.getName(), serverInfo);
+        this.playerConnections.put(player.getAddress(), player.getName());
         return wasConnected;
     }
 
@@ -88,6 +95,7 @@ public class PlayerManager {
     }
 
     public void removePlayer(ProxiedPlayer player) {
+        this.playerConnections.remove(player.getAddress());
         this.playerMap.remove(player.getName());
     }
 

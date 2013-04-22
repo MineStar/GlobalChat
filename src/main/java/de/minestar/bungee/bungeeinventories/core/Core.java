@@ -3,8 +3,8 @@ package de.minestar.bungee.bungeeinventories.core;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.PluginManager;
 import de.minestar.bungee.bungeeinventories.data.DataPacketHandler;
-import de.minestar.bungee.bungeeinventories.data.PlayerManager;
 import de.minestar.bungee.bungeeinventories.listener.ActionListener;
+import de.minestar.bungee.bungeeinventories.manager.PlayerManager;
 import de.minestar.bungee.library.AbstractCore;
 
 public class Core extends AbstractCore {

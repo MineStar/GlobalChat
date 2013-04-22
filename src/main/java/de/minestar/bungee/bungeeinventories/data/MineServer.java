@@ -1,5 +1,7 @@
 package de.minestar.bungee.bungeeinventories.data;
 
+import net.md_5.bungee.api.ChatColor;
+
 public class MineServer {
     private final String name;
     private final ChatColor color;

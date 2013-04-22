@@ -4,9 +4,11 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Map;
 
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.event.ServerConnectedEvent;
@@ -15,11 +17,10 @@ import net.md_5.bungee.api.plugin.Listener;
 
 import com.google.common.eventbus.Subscribe;
 
-import de.minestar.bungee.bungeeinventories.data.ChatColor;
 import de.minestar.bungee.bungeeinventories.data.DataPacketHandler;
 import de.minestar.bungee.bungeeinventories.data.MineServer;
-import de.minestar.bungee.bungeeinventories.data.MineServerContainer;
-import de.minestar.bungee.bungeeinventories.data.PlayerManager;
+import de.minestar.bungee.bungeeinventories.manager.MineServerManager;
+import de.minestar.bungee.bungeeinventories.manager.PlayerManager;
 import de.minestar.bungee.library.protocol.NetworkPacket;
 import de.minestar.bungee.library.protocol.packets.ChatDeathPacket;
 import de.minestar.bungee.library.protocol.packets.ChatMessagePacket;
@@ -47,6 +48,13 @@ public class ActionListener implements Listener {
         return null;
     }
 
+    public static ProxiedPlayer getPlayer(String playerName) {
+        if (playerName == null) {
+            return null;
+        }
+        return ProxyServer.getInstance().getPlayer(playerName);
+    }
+
     // /////////////////////////////////////////
     //
     // CLASS-Methods
@@ -54,12 +62,12 @@ public class ActionListener implements Listener {
     // /////////////////////////////////////////
 
     private DataPacketHandler dataPacketHandler;
-    private MineServerContainer container;
+    private MineServerManager container;
     private PlayerManager playerManager;
 
     public ActionListener(DataPacketHandler dataPacketHandler, PlayerManager playerManager) {
         this.dataPacketHandler = dataPacketHandler;
-        this.container = new MineServerContainer();
+        this.container = new MineServerManager();
         this.playerManager = playerManager;
         this.loadServers();
     }
@@ -73,6 +81,8 @@ public class ActionListener implements Listener {
                 this.container.addServer(new MineServer(serverInfo.getName(), ChatColor.YELLOW));
             } else if (serverInfo.getName().equalsIgnoreCase("survival")) {
                 this.container.addServer(new MineServer(serverInfo.getName(), ChatColor.RED));
+            } else if (serverInfo.getName().equalsIgnoreCase("ftb")) {
+                this.container.addServer(new MineServer(serverInfo.getName(), ChatColor.BLUE));
             }
         }
     }
@@ -123,7 +133,36 @@ public class ActionListener implements Listener {
     }
 
     @Subscribe
+    public void onChat(ChatEvent event) {
+        if (event.isCommand()) {
+            // handle commands
+            String command = event.getMessage().toLowerCase();
+            if (!command.startsWith("/")) {
+                command = "/" + command;
+            }
+
+            // handle only players
+            boolean isPlayer = (getPlayer(this.playerManager.getPlayerNameByAdress(event.getSender().getAddress())) != null);
+            if (!isPlayer) {
+                return;
+            }
+
+            // handle command
+            if (command.startsWith("/who") || command.startsWith("/online") || command.startsWith("/list")) {
+                event.setCancelled(true);
+                return;
+            }
+        } else {
+            // handle chat
+            System.out.println("chat event!!!!");
+        }
+    }
+
+    @Subscribe
     public void onPluginMessage(PluginMessageEvent event) {
+
+        System.out.println("packet received!!!");
+
         // correct channel
         if (!event.getTag().equalsIgnoreCase(this.dataPacketHandler.getChannel())) {
             return;

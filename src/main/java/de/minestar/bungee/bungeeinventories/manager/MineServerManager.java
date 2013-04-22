@@ -1,15 +1,16 @@
-package de.minestar.bungee.bungeeinventories.data;
+package de.minestar.bungee.bungeeinventories.manager;
 
 import java.util.HashMap;
 
 import de.minestar.bungee.bungeeinventories.core.Core;
+import de.minestar.bungee.bungeeinventories.data.MineServer;
 import de.minestar.bungee.library.utils.ConsoleUtils;
 
-public class MineServerContainer {
+public class MineServerManager {
 
     private HashMap<String, MineServer> serverList;
 
-    public MineServerContainer() {
+    public MineServerManager() {
         this.serverList = new HashMap<String, MineServer>();
     }
 
